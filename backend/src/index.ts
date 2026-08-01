@@ -5,7 +5,6 @@ import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-import execa from 'child_process';
 import { pasteRouter } from './routes/pastes';
 import { authRouter } from './routes/auth';
 import { logger } from './logger';
@@ -19,15 +18,6 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger }));
-
-// Auto-initialize SQLite database schema on Vercel serverless function cold-starts
-if (process.env.VERCEL) {
-  try {
-    execa.execSync('npx prisma db push --skip-generate', { stdio: 'inherit' });
-  } catch (e: any) {
-    logger.error('Failed to run prisma db push on Vercel serverless coldstart');
-  }
-}
 
 // Serve OpenAPI Docs
 try {
