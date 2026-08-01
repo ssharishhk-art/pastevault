@@ -30,6 +30,47 @@ PasteVault is a production-grade code and text snippet sharing web application b
 
 ---
 
+## 🏗️ System Architecture & Data Flow
+
+```
++-------------------------------------------------------------------+
+|                        Client Browser                             |
+|     (React 18 + Vite + Monaco Editor + Tailwind + Framer Motion)  |
++---------------------------------+---------------------------------+
+                                  |
+                           HTTP / REST API
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                      Nginx Reverse Proxy                          |
+|                    (Container: frontend:80)                       |
++---------------------------------+---------------------------------+
+                                  |
+                           Proxy Pass /api
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                       Express Node API                            |
+|     (TypeScript + Zod + Rate Limit + Pino + Cron Cleaner)        |
++---------------------------------+---------------------------------+
+                                  |
+                              Prisma ORM
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                      PostgreSQL / SQLite                          |
+|                      (Container: 5432)                            |
++-------------------------------------------------------------------+
+```
+
+### 🔐 Security & Data Design Principles:
+1. **Anonymous Ownership**: Clients receive a unique `ownerToken` stored in `localStorage`, permitting paste management/deletion without mandatory sign-in.
+2. **Bcrypt Protection**: Private pastes store salted `bcrypt` password hashes.
+3. **Burn-After-Read**: Pastes marked as `burnAfterRead` are destroyed upon first retrieval.
+4. **Auto-Expiration**: Background cron cleaner (`node-cron`) automatically purges expired pastes every 5 minutes.
+
+---
+
 ## 🌟 Key Features
 
 - 🔮 **3D Fluid Glass Splash Screen**: React Bits `<FluidGlass />` lens distortion around 3D `DEVS` typography with custom start flow.
