@@ -3,6 +3,8 @@ import { prisma } from './prisma.js';
 import { logger } from './logger.js';
 
 export function startCleanupJob() {
+  if (process.env.VERCEL) return;
+  
   // Run every 5 minutes
   cron.schedule('*/5 * * * *', async () => {
     try {
