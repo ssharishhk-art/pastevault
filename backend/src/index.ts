@@ -1,75 +1,57 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import rateLimit from 'express-rate-limit';
 import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-import { logger } from './logger.js';
-import { prisma } from './prisma.js';
-import { pasteRouter } from './routes/pastes.js';
-import { authRouter } from './routes/auth.js';
-import { startCleanupJob } from './cron.js';
+import pastesRouter from './routes/pastes';
+import authRouter from './routes/auth';
+import { logger } from './logger';
+import { startCleanupCron } from './cron';
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Setup Pino HTTP logger
-app.use(pinoHttp({ logger }));
-
-// CORS & JSON Parser
 app.use(cors());
 app.use(express.json());
+app.use(pinoHttp({ logger }));
 
-// Rate Limiter on Paste creation / write endpoints
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-});
-app.use('/api/', apiLimiter);
-
-// Health Check Endpoint
-app.get('/health', async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    return res.json({
-      status: 'ok',
-      database: 'connected',
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      database: 'disconnected',
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
-
-// OpenAPI Swagger Docs
+// Serve OpenAPI Docs
 try {
-  const swaggerPath = path.resolve(process.cwd(), '../docs/openapi.yaml');
-  const swaggerDocument = YAML.load(swaggerPath);
+  const swaggerDocument = YAML.load(path.join(__dirname, '../../docs/openapi.yaml'));
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } catch (e) {
-  logger.warn('OpenAPI specification file could not be loaded for /api/docs');
+  logger.warn('OpenAPI spec file not loaded for swagger docs');
 }
 
+// Health Check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // API Routes
-app.use('/api/pastes', pasteRouter);
+app.use('/api/pastes', pastesRouter);
 app.use('/api/auth', authRouter);
 
-// Start Cron background cleanup
-startCleanupJob();
-
-app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
+// Standardized Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error(err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+  });
 });
+
+// Start cleanup background cron task
+startCleanupCron();
+
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+    logger.info(`Swagger UI docs available at http://localhost:${PORT}/api/docs`);
+  });
+}
+
+export default app;
