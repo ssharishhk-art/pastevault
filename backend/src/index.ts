@@ -5,10 +5,10 @@ import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-import pastesRouter from './routes/pastes';
-import authRouter from './routes/auth';
+import { pasteRouter } from './routes/pastes';
+import { authRouter } from './routes/auth';
 import { logger } from './logger';
-import { startCleanupCron } from './cron';
+import { startCleanupJob } from './cron';
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/pastes', pastesRouter);
+app.use('/api/pastes', pasteRouter);
 app.use('/api/auth', authRouter);
 
 // Standardized Error Handler
@@ -45,7 +45,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Start cleanup background cron task
-startCleanupCron();
+startCleanupJob();
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
