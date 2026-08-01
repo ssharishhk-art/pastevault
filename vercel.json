@@ -1,36 +1,24 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "source": "/api/(.*)",
+      "destination": "/backend/src/index.ts"
     },
     {
-      "src": "backend/src/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/src/index.ts"
+      "source": "/health",
+      "destination": "/backend/src/index.ts"
     },
     {
-      "src": "/health",
-      "dest": "backend/src/index.ts"
+      "source": "/assets/(.*)",
+      "destination": "/frontend/assets/$1"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "frontend/assets/$1"
+      "source": "/snow-devs.png",
+      "destination": "/frontend/snow-devs.png"
     },
     {
-      "src": "/snow-devs.png",
-      "dest": "frontend/snow-devs.png"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/index.html"
+      "source": "/(.*)",
+      "destination": "/frontend/index.html"
     }
   ]
 }
