@@ -1,0 +1,27 @@
+services:
+  # Web Service 1: Backend Node.js API
+  - type: web
+    name: pastevault-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: NODE_ENV
+        value: production
+
+  # Web Service 2: Frontend Vite Static Site
+  - type: web
+    name: pastevault-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
