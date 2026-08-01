@@ -11,8 +11,9 @@ PasteVault is a production-grade code and text snippet sharing web application b
 | Resource | Live Link |
 | :--- | :--- |
 | 💻 **Frontend Web Application** | [https://pastevault-2yrq.vercel.app](https://pastevault-2yrq.vercel.app) |
-| ⚡ **Backend REST API Server** | [https://pastevault-q8ux.vercel.app](https://pastevault-q8ux.vercel.app) |
-| 📖 **Interactive Swagger API Docs** | [https://pastevault-q8ux.vercel.app/api/docs](https://pastevault-q8ux.vercel.app/api/docs) |
+| ⚡ **Backend REST API Server** | [https://pastevault-2yrq.vercel.app/api](https://pastevault-2yrq.vercel.app/api) |
+| 📖 **Interactive Swagger API Docs** | [https://pastevault-2yrq.vercel.app/api/docs](https://pastevault-2yrq.vercel.app/api/docs) |
+| 🏥 **API Health Check** | [https://pastevault-2yrq.vercel.app/health](https://pastevault-2yrq.vercel.app/health) |
 | 📦 **GitHub Repository** | [https://github.com/ssharishhk-art/pastevault](https://github.com/ssharishhk-art/pastevault) |
 
 ---
@@ -185,7 +186,7 @@ npm run test:backend
   ├── frontend/          # React 18 + Vite + Tailwind + R3F WebGL Components
   ├── docs/              # OpenAPI specification & Architecture documentation
   ├── docker-compose.yml # Docker multi-container orchestrator
-  └── render.yaml        # Render cloud deployment blueprint
+  └── vercel.json        # Vercel monorepo deployment config (frontend + backend)
 ```
 
 ---
