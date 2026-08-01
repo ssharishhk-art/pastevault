@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: PasteBin API
+  version: 1.0.0
+  description: High-performance production-ready PasteBin REST API with authentication, password protection, and auto-expiration.
+paths:
+  /health:
+    get:
+      summary: Health Check Endpoint
+      description: Returns service status and database connectivity.
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  database:
+                    type: string
+                    example: connected
+                  timestamp:
+                    type: string
+
+  /api/pastes:
+    post:
+      summary: Create a new paste
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                language:
+                  type: string
+                  default: plaintext
+                expiration:
+                  type: string
+                  enum: [never, 10m, 1h, 1d, 1w, 1m]
+                  default: never
+                visibility:
+                  type: string
+                  enum: [PUBLIC, UNLISTED, PRIVATE]
+                  default: PUBLIC
+                password:
+                  type: string
+                burnAfterRead:
+                  type: boolean
+                  default: false
+                ownerToken:
+                  type: string
+      responses:
+        '201':
+          description: Paste created successfully
+
+    get:
+      summary: List recent public pastes
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of public pastes
+
+  /api/pastes/mine:
+    get:
+      summary: List pastes owned by user or client token
+      parameters:
+        - name: ownerToken
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of owned pastes
+
+  /api/pastes/{slug}:
+    get:
+      summary: Retrieve a paste by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paste details
+        '401':
+          description: Password required or incorrect
+        '404':
+          description: Paste not found or expired
+
+    delete:
+      summary: Delete a paste
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ownerToken
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paste deleted
+        '403':
+          description: Unauthorized to delete
+
+  /api/pastes/{slug}/raw:
+    get:
+      summary: Get raw text content of a paste
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plain text raw paste content

@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pastes Paste[]
+}
+
+model Paste {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  title          String?
+  content        String
+  language       String    @default("plaintext")
+  visibility     String    @default("PUBLIC")
+  passwordHash   String?
+  burnAfterRead  Boolean   @default(false)
+  views          Int       @default(0)
+  expiresAt      DateTime?
+  ownerToken     String?   // Client localStorage token for anonymous paste ownership
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([expiresAt])
+  @@index([ownerToken])
+  @@index([userId])
+}
