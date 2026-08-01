@@ -19,6 +19,16 @@ app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 
+// Root route for backend serverless deployment
+app.get('/', (req, res) => {
+  res.json({
+    message: 'PasteVault REST API Server',
+    health: '/health',
+    docs: '/api/docs',
+    pastes: '/api/pastes'
+  });
+});
+
 // Serve OpenAPI Docs
 try {
   const swaggerDocument = YAML.load(path.join(__dirname, '../../docs/openapi.yaml'));
